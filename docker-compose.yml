@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: prnu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prnu}
+      POSTGRES_DB: prnu
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: prnuadmin
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-prnupassword}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql+psycopg://prnu:${POSTGRES_PASSWORD:-prnu}@postgres:5432/prnu
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: prnuadmin
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-prnupassword}
+      MINIO_SECURE: ${MINIO_SECURE:-false}
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: celery -A app.worker.celery_app.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+psycopg://prnu:${POSTGRES_PASSWORD:-prnu}@postgres:5432/prnu
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: prnuadmin
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-prnupassword}
+      MINIO_SECURE: ${MINIO_SECURE:-false}
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  minio-data:
+  redis-data:
+

@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+sqlalchemy
+psycopg[binary]
+python-multipart
+minio
+celery
+redis
+pillow
+numpy
+scipy
+PyWavelets
+pytest
+httpx

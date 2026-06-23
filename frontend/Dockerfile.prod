@@ -1,0 +1,38 @@
+# ============================================
+# 阶段 1：构建 Next.js 生产包
+# ============================================
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+# 使用淘宝 npm 镜像加速
+RUN npm config set registry https://registry.npmmirror.com
+
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY . .
+
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
+RUN npx next build
+
+# ============================================
+# 阶段 2：生产运行时
+# ============================================
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
