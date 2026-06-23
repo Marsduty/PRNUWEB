@@ -9,6 +9,7 @@ frontend/out/
 .superpowers/
 .claude/settings.local.json
 .continue/
+_local_archive/
 artifacts/
 
 .env

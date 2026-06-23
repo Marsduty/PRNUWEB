@@ -3,6 +3,7 @@
 .claude/
 .continue/
 .superpowers/
+_local_archive/
 
 .env
 .env.*

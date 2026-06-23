@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from enhancers import dc
-from fingerprint import get_fingerprint
+from prnu_core.enhancers import dc
+from prnu_core.fingerprint import get_fingerprint
 
 
 def test_dc_processes_all_columns_for_non_square_reference():
@@ -34,7 +34,7 @@ def test_get_fingerprint_rejects_non_rgb_images():
 
 
 def test_matching_core_ncc_pce_and_ranking():
-    from matching_core import ncc_score, pce_score, rank_references
+    from prnu_core.matching_core import ncc_score, pce_score, rank_references
 
     query = np.array([[1.0, 2.0], [3.0, 4.0]])
     same = query.copy()
@@ -52,12 +52,6 @@ def test_matching_core_ncc_pce_and_ranking():
     ranked = rank_references(query, {"same": same, "different": different}, top_k=2)
     assert ranked[0]["name"] == "same"
     assert ranked[0]["ncc"] == pytest.approx(1.0)
-
-
-def test_matching_module_imports_without_project_package_config():
-    import matching
-
-    assert hasattr(matching, "run_ncc")
 
 
 def test_prnu_core_package_exports_main_functions():
