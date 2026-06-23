@@ -8,6 +8,10 @@ _local_archive/
 .env
 .env.*
 !.env.example
+!.env.local.example
+!.env.prod.example
+
+nginx.conf
 
 __pycache__/
 *.py[cod]

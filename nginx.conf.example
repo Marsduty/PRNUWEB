@@ -1,4 +1,8 @@
-# PRNU 智能取证平台 - Nginx 反向代理配置（暂用 HTTP，SSL 证书申请后再切 HTTPS）
+# PRNU 智能取证平台 - Nginx 反向代理模板
+# 使用方式：
+#   1. 复制本文件为 nginx.conf
+#   2. 将 your-domain.com 和 your-server-ip 替换为实际域名/IP
+#   3. nginx.conf 是本地/服务器私有配置，不提交 Git
 
 upstream frontend {
     server frontend:3000;
@@ -10,14 +14,12 @@ upstream backend {
 
 server {
     listen 80;
-    server_name ppsuc603.top 47.94.95.3;
+    server_name your-domain.com www.your-domain.com your-server-ip;
 
-    # ACME 验证目录（用于后续申请 SSL 证书）
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
 
-    # 后端 API 代理
     location /api/ {
         rewrite ^/api/(.*)$ /$1 break;
         proxy_pass http://backend;
@@ -50,7 +52,6 @@ server {
         proxy_set_header Host $host;
     }
 
-    # 前端
     location / {
         proxy_pass http://frontend;
         proxy_set_header Host $host;

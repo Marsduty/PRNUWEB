@@ -3,7 +3,7 @@
 # PRNU 智能取证平台 - 阿里云一键部署脚本
 # 使用方法：
 #   1. 先 SSH 登录阿里云服务器
-#   2. 将本项目上传到服务器（scp -r ./PRNUweb root@IP:/opt/prnu）
+#   2. 将本项目上传到服务器或从 GitHub clone 到 /opt/prnu
 #   3. 在服务器上运行：bash scripts/deploy-aliyun.sh
 # =============================================
 
@@ -24,63 +24,82 @@ else
     echo "✅ Docker 已安装"
 fi
 
-# 检查 Docker Compose
-if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Docker Compose 未安装，正在安装..."
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    echo "✅ Docker Compose 安装完成"
+# 检查 Docker Compose v2
+if ! docker compose version &> /dev/null; then
+    echo "❌ Docker Compose v2 未安装，请先安装 Docker Compose 插件后重试"
+    exit 1
 else
-    echo "✅ Docker Compose 已安装"
+    echo "✅ Docker Compose v2 已安装"
 fi
 
 # 切换到项目目录
 cd /opt/prnu || { echo "❌ 找不到 /opt/prnu 目录，请先上传项目"; exit 1; }
 
-# 检查 .env 文件
-if [ ! -f .env ]; then
-    echo "⚠️  未找到 .env 文件，正在创建..."
-    echo "请先输入你的服务器公网 IP 或域名："
-    read -r SERVER_ADDR
+# 检查生产环境变量文件
+if [ ! -f .env.prod ]; then
+    echo "⚠️  未找到 .env.prod 文件，正在创建..."
+    echo "请先输入你的服务器公网 IP："
+    read -r SERVER_IP
+    echo "请输入你的域名（没有域名可直接回车，默认使用服务器 IP）："
+    read -r SERVER_DOMAIN
+    if [ -z "$SERVER_DOMAIN" ]; then
+        SERVER_DOMAIN="$SERVER_IP"
+    fi
 
     # 生成随机密码
     DB_PASS=$(openssl rand -base64 16)
     MINIO_PASS=$(openssl rand -base64 16)
 
-    cat > .env << EOF
+    cat > .env.prod << EOF
 # 数据库密码
 POSTGRES_PASSWORD=${DB_PASS}
 
 # MinIO 密码
 MINIO_ROOT_PASSWORD=${MINIO_PASS}
 
-# 前端 API 地址
-NEXT_PUBLIC_API_BASE_URL=http://${SERVER_ADDR}:8000
+# 生产环境由 Nginx 统一入口代理 API
+NEXT_PUBLIC_API_BASE_URL=/api
 
 # 后端 CORS 配置
-CORS_ALLOW_ORIGINS=http://${SERVER_ADDR}:3000,http://${SERVER_ADDR}
+CORS_ALLOW_ORIGINS=http://${SERVER_DOMAIN},https://${SERVER_DOMAIN},http://${SERVER_IP},https://${SERVER_IP}
 
 # MinIO 安全模式
 MINIO_SECURE=false
-
-# 局域网 IP
-LAN_HOST=${SERVER_ADDR}
 EOF
 
-    echo "✅ .env 文件已创建"
+    echo "✅ .env.prod 文件已创建"
     echo "📝 数据库密码: ${DB_PASS}"
     echo "📝 MinIO 密码: ${MINIO_PASS}"
     echo "⚠️  请妥善保管以上密码！"
     echo ""
 fi
 
-# 检查并修改 nginx.conf 中的域名
-if [ -f nginx.conf ]; then
-    echo "🔧 检查 nginx.conf 配置..."
-    if grep -q "your-domain.com" nginx.conf; then
-        echo "⚠️  nginx.conf 中还有占位符域名，请手动编辑 nginx.conf"
-        echo "   将 your-domain.com 替换为你的实际域名"
+# 检查并生成服务器私有 nginx.conf
+if [ ! -f nginx.conf ]; then
+    if [ ! -f nginx.conf.example ]; then
+        echo "❌ 找不到 nginx.conf.example，请检查项目文件是否完整"
+        exit 1
     fi
+
+    echo "⚠️  未找到 nginx.conf，正在从 nginx.conf.example 创建..."
+    if [ -z "$SERVER_IP" ]; then
+        echo "请先输入你的服务器公网 IP："
+        read -r SERVER_IP
+    fi
+    if [ -z "$SERVER_DOMAIN" ]; then
+        echo "请输入你的域名（没有域名可直接回车，默认使用服务器 IP）："
+        read -r SERVER_DOMAIN
+        if [ -z "$SERVER_DOMAIN" ]; then
+            SERVER_DOMAIN="$SERVER_IP"
+        fi
+    fi
+
+    cp nginx.conf.example nginx.conf
+    sed -i "s/your-domain.com/${SERVER_DOMAIN}/g" nginx.conf
+    sed -i "s/your-server-ip/${SERVER_IP}/g" nginx.conf
+    echo "✅ nginx.conf 已创建"
+else
+    echo "✅ nginx.conf 已存在，保持当前服务器私有配置"
 fi
 
 echo ""
@@ -89,7 +108,7 @@ echo "  开始构建和启动服务..."
 echo "========================================"
 
 # 构建并启动所有服务
-docker-compose up --build -d
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
 echo ""
 echo "========================================"
@@ -97,28 +116,28 @@ echo "  🚀 部署完成！"
 echo "========================================"
 echo ""
 echo "📊 服务状态："
-docker-compose ps
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml ps
 
 echo ""
 echo "🌐 访问地址："
-echo "  前端页面：      http://你的服务器IP:3000"
-echo "  后端 API：      http://你的服务器IP:8000"
-echo "  API 文档：      http://你的服务器IP:8000/docs"
-echo "  MinIO 控制台：  http://你的服务器IP:9001"
+echo "  前端页面：      http://你的服务器IP 或域名"
+echo "  后端 API：      http://你的服务器IP 或域名/api"
+echo "  API 文档：      http://你的服务器IP 或域名/docs"
+echo "  MinIO 控制台：  生产环境默认不暴露公网端口"
 echo ""
 echo "📝  MinIO 登录信息："
 echo "  用户名：prnuadmin"
-echo "  密码：  查看 .env 文件中的 MINIO_ROOT_PASSWORD"
+echo "  密码：  查看 .env.prod 文件中的 MINIO_ROOT_PASSWORD"
 echo ""
 echo "📋 查看日志命令："
-echo "  docker-compose logs -f backend    # 后端日志"
-echo "  docker-compose logs -f frontend   # 前端日志"
-echo "  docker-compose logs -f worker     # 工作进程日志"
+echo "  docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml logs -f backend"
+echo "  docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml logs -f frontend"
+echo "  docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml logs -f worker"
 echo ""
 
 # 输出密码提示
-if [ -f .env ]; then
-    echo "⚠️  重要：请检查 .env 文件中的密码是否已修改！"
+if [ -f .env.prod ]; then
+    echo "⚠️  重要：请检查 .env.prod 文件中的密码是否已修改！"
     echo "   建议使用强密码并定期更换。"
 fi
 

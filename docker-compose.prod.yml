@@ -1,14 +1,15 @@
 # ============================================
 # 生产环境扩展配置
 # 使用方式（首次部署）：
-#   1. 先修改 nginx.conf 中的 your-domain.com 为实际域名
+#   1. 复制 nginx.conf.example 为 nginx.conf，并把 your-domain.com 改为实际域名
+#   2. 复制 .env.prod.example 为 .env.prod，并修改密码、域名等配置
 #   2. 申请 SSL 证书：
-#      docker-compose -f docker-compose.yml -f docker-compose.prod.yml run --rm certbot \
+#      docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml run --rm certbot \
 #        certonly --webroot -w /var/www/certbot \
 #        -d your-domain.com -d www.your-domain.com \
 #        --email your-email@example.com --agree-tos --non-interactive
 #   3. 启动全部服务：
-#      docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#      docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml up -d
 # ============================================
 
 services:
@@ -39,9 +40,11 @@ services:
 
   # 后端 - 不暴露公网端口，仅内网可访问
   backend:
-    ports: []
+    ports: !reset []
     expose:
       - "8000"
+    environment:
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-https://your-domain.com,http://your-domain.com}
 
   # 前端 - 不暴露公网端口，仅内网可访问（生产构建）
   frontend:
@@ -51,23 +54,29 @@ services:
       args:
         # 生产环境通过 nginx 统一入口，API 走相对路径 /api
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api}
-    ports: []
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api}
+    ports: !reset []
     expose:
       - "3000"
 
   # 数据库 - 不暴露公网端口
   postgres:
-    ports: []
+    ports: !reset []
     expose:
       - "5432"
 
   # Redis - 不暴露公网端口
   redis:
-    ports: []
+    ports: !reset []
     expose:
       - "6379"
 
-  # MinIO 配置沿用基础 docker-compose.yml，此处无需覆写
+  # MinIO - 不暴露公网端口，仅供后端和 worker 通过 Docker 内网访问
+  minio:
+    ports: !reset []
+    expose:
+      - "9000"
 
 
 volumes:

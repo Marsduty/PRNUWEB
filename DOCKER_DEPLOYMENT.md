@@ -1,5 +1,37 @@
 # PRNU 智能取证平台 Docker 部署指南
 
+## 本地与服务器配置边界
+
+当前项目将本地开发和服务器部署分开管理：
+
+- 本地开发使用 `.env.local` 和 `docker-compose.yml`。
+- 服务器部署使用 `.env.prod`、`docker-compose.yml`、`docker-compose.prod.yml` 和服务器私有 `nginx.conf`。
+- `nginx.conf`、`.env.local`、`.env.prod` 都不提交 Git；仓库只保留 `nginx.conf.example`、`.env.local.example`、`.env.prod.example`。
+- 生产环境只通过 Nginx 暴露 `80/443`，后端、前端、PostgreSQL、Redis、MinIO 均不直接暴露公网端口。
+
+本地启动：
+
+```bash
+copy .env.local.example .env.local
+docker compose --env-file .env.local up -d --build
+```
+
+服务器启动：
+
+```bash
+cp .env.prod.example .env.prod
+cp nginx.conf.example nginx.conf
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+服务器上查看日志：
+
+```bash
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml logs -f backend
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml logs -f frontend
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml logs -f worker
+```
+
 ## 前置条件
 
 ### Windows 系统

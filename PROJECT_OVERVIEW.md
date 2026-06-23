@@ -159,14 +159,17 @@ PRNUweb/
 │       ├── specs/2026-06-02-prnu-web-platform-design.md    # 详细设计文档
 │       └── plans/2026-06-02-prnu-web-platform-implementation.md # 实现计划
 │
-├── docker-compose.yml            # 六服务编排
+├── docker-compose.yml            # 本地开发六服务编排
+├── docker-compose.prod.yml       # 服务器生产部署覆盖配置
+├── nginx.conf.example            # Nginx 服务器私有配置模板
 ├── docker-daemon.json            # Docker 镜像加速配置（国内）
 ├── DOCKER_DEPLOYMENT.md          # Docker 部署详细指南
-├── .env.example                  # 环境变量示例
+├── .env.local.example            # 本地开发环境变量示例
+├── .env.prod.example             # 服务器生产环境变量示例
 └── .gitignore
 ```
 
-> 注意：根目录下的 `fingerprint.py`、`matching.py`、`matching_core.py`、`noise_extract.py`、`prnu_utils.py`、`enhancers.py` 为迁移前原始文件，后端实际引用的是 `prnu_core/` 包。这些文件在新代码中已不再使用，可考虑清理。
+> 注意：PRNU 正式算法代码统一维护在 `prnu_core/` 包中。根目录下迁移前的 `fingerprint.py`、`matching.py`、`matching_core.py`、`noise_extract.py`、`prnu_utils.py`、`enhancers.py` 已移动到本地 `_local_archive/`，并排除在 Git 与 Docker 构建上下文之外。
 
 ---
 
