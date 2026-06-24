@@ -13,7 +13,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        {children}
+        <a className="icp-footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">
+          皖ICP备2026018644号
+        </a>
+      </body>
     </html>
   );
 }

@@ -43,6 +43,22 @@ body::before {
   mask-image: linear-gradient(to bottom, black, transparent 84%);
 }
 
+.icp-footer-link {
+  position: fixed;
+  bottom: 10px;
+  left: 16px;
+  z-index: 30;
+  color: rgba(188, 236, 255, 0.72);
+  font-size: 12px;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.icp-footer-link:hover {
+  color: #bcecff;
+  text-decoration: underline;
+}
+
 button,
 input {
   font: inherit;

@@ -146,3 +146,17 @@ test("主看板指标下方显示较昨日百分比", () => {
   assert.doesNotMatch(page, /实时统计/);
   assert.match(api, /metric_trends/);
 });
+
+test("页面底部左侧显示工信部备案链接", () => {
+  const layout = read("src/app/layout.tsx");
+  const globals = read("src/app/globals.css");
+
+  assert.match(layout, /https:\/\/beian\.miit\.gov\.cn\//);
+  assert.match(layout, /target="_blank"/);
+  assert.match(layout, /rel="noreferrer"/);
+  assert.match(layout, /皖ICP备2026018644号/);
+  assert.match(layout, /icp-footer-link/);
+  assert.match(globals, /\.icp-footer-link/);
+  assert.match(globals, /bottom:/);
+  assert.match(globals, /left:/);
+});
