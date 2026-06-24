@@ -15,9 +15,15 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body>
         {children}
-        <a className="icp-footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">
-          皖ICP备2026018644号
-        </a>
+        <footer className="icp-footer">
+          <a className="icp-footer-link" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=34010202602233" target="_blank" rel="noreferrer">
+            <img src="https://beian.mps.gov.cn/web/assets/logo01.6189a29f.png" alt="" className="icp-footer-icon" />
+            皖公网安备34010202602233号
+          </a>
+          <a className="icp-footer-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">
+            皖ICP备2026018644号
+          </a>
+        </footer>
       </body>
     </html>
   );

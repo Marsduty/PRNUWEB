@@ -38,13 +38,11 @@ services:
     command: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
     restart: unless-stopped
 
-  # 后端 - 不暴露公网端口，仅内网可访问
+  # 后端 - 不暴露公网端口，仅内网可访问（CORS 等环境变量沿用基础文件 + .env.prod）
   backend:
     ports: !reset []
     expose:
       - "8000"
-    environment:
-      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-https://your-domain.com,http://your-domain.com}
 
   # 前端 - 不暴露公网端口，仅内网可访问（生产构建）
   frontend:
@@ -52,9 +50,8 @@ services:
       context: frontend
       dockerfile: Dockerfile.prod
       args:
-        # 生产环境通过 nginx 统一入口，API 走相对路径 /api
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api}
-    environment:
+    environment: !reset
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api}
     ports: !reset []
     expose:

@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:16
     environment:
+      TZ: Asia/Shanghai
       POSTGRES_USER: prnu
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prnu}
       POSTGRES_DB: prnu
@@ -39,6 +40,7 @@ services:
       dockerfile: backend/Dockerfile
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment:
+      TZ: Asia/Shanghai
       DATABASE_URL: postgresql+psycopg://prnu:${POSTGRES_PASSWORD:-prnu}@postgres:5432/prnu
       REDIS_URL: redis://redis:6379/0
       MINIO_ENDPOINT: minio:9000
@@ -60,6 +62,7 @@ services:
       dockerfile: backend/Dockerfile
     command: celery -A app.worker.celery_app.celery_app worker --loglevel=info
     environment:
+      TZ: Asia/Shanghai
       DATABASE_URL: postgresql+psycopg://prnu:${POSTGRES_PASSWORD:-prnu}@postgres:5432/prnu
       REDIS_URL: redis://redis:6379/0
       MINIO_ENDPOINT: minio:9000
@@ -77,6 +80,7 @@ services:
       context: frontend
       dockerfile: Dockerfile
     environment:
+      TZ: Asia/Shanghai
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
     ports:
       - "3000:3000"

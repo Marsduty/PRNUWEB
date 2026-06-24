@@ -43,15 +43,29 @@ body::before {
   mask-image: linear-gradient(to bottom, black, transparent 84%);
 }
 
-.icp-footer-link {
+.icp-footer {
   position: fixed;
   bottom: 10px;
   left: 16px;
   z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icp-footer-link {
   color: rgba(188, 236, 255, 0.72);
   font-size: 12px;
   line-height: 1.4;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icp-footer-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .icp-footer-link:hover {

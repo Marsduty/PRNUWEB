@@ -1,9 +1,12 @@
-from datetime import UTC, datetime
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+TZ = ZoneInfo("Asia/Shanghai")
 
 
 class Fingerprint(Base):
@@ -17,7 +20,7 @@ class Fingerprint(Base):
     height: Mapped[int] = mapped_column(Integer, nullable=False)
     width: Mapped[int] = mapped_column(Integer, nullable=False)
     enhancement_config: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(TZ), nullable=False)
 
     device = relationship("Device", back_populates="fingerprints")
     source_image = relationship("ImageRecord", back_populates="fingerprints")

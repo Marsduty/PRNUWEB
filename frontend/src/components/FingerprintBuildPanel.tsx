@@ -20,7 +20,7 @@ import { PRNU_TASK_TYPES, waitForDisplayTaskNo } from "@/lib/taskNumbers";
 type RebuildStatus = {
   jobId?: number;
   message: string;
-  state: "submitting" | "running" | "succeeded" | "failed";
+  state: "submitting" | "submitted" | "running" | "succeeded" | "failed";
 };
 
 function delay(ms: number) {
@@ -170,16 +170,10 @@ export function FingerprintBuildPanel() {
         const payload = await rebuildFingerprintReferences(row.id, editFiles);
         setRebuildStatus({
           jobId: payload.job_id,
-          state: "running",
-          message: "设备指纹重构任务已创建，等待后台处理完成"
+          state: "submitted",
+          message: "等待重构任务提交"
         });
-        await waitForJobCompletion(payload.job_id);
-        setRebuildStatus({
-          jobId: payload.job_id,
-          state: "succeeded",
-          message: "设备指纹重构完成，正在刷新设备指纹信息"
-        });
-        setMessage("设备指纹重构完成");
+        setMessage("设备指纹重构任务已创建");
       } else {
         setMessage("设备指纹信息已更新");
       }
@@ -450,15 +444,21 @@ export function FingerprintBuildPanel() {
       ) : null}
 
       {rebuildStatus ? (
-        <div className="subdialog-overlay blocking-dialog" role="dialog" aria-modal="true" aria-label="设备指纹重构状态">
-          <div className="subdialog-page result-detail-dialog text-center">
+        <div className="subdialog-overlay blocking-dialog" role="dialog" aria-modal="true" aria-label="设备指纹重构状态" onClick={() => rebuildStatus.state !== "submitting" && setRebuildStatus(null)}>
+          <div className="subdialog-page result-detail-dialog text-center" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-md border border-cyanLine/60 bg-cyan-500/10">
               <RefreshCcw className="h-6 w-6 text-cyan-100" aria-hidden="true" />
             </div>
             <h2 className="text-xl font-semibold text-white">设备指纹重构</h2>
             <p className="mt-3 text-sm text-sky-200">{rebuildStatus.message}</p>
             {rebuildStatus.jobId ? <p className="mt-2 text-xs text-sky-300">后台任务：#{rebuildStatus.jobId}</p> : null}
-            <p className="mt-4 text-xs text-warningGold">重构完成前请勿进行其他操作</p>
+            {rebuildStatus.state === "submitting" ? (
+              <p className="mt-4 text-xs text-warningGold">正在提交，请稍候...</p>
+            ) : (
+              <button className="mt-4 rounded bg-cyan-700 px-4 py-2 text-sm text-white hover:bg-cyan-600" onClick={() => setRebuildStatus(null)}>
+                关闭
+              </button>
+            )}
           </div>
         </div>
       ) : null}

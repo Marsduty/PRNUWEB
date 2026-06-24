@@ -1,9 +1,12 @@
-from datetime import UTC, datetime
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+TZ = ZoneInfo("Asia/Shanghai")
 
 
 class Device(Base):
@@ -15,7 +18,7 @@ class Device(Base):
     model: Mapped[str | None] = mapped_column(String(120), nullable=True)
     mac_address: Mapped[str | None] = mapped_column(String(80), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(TZ), nullable=False)
 
     images = relationship("ImageRecord", back_populates="device")
     fingerprints = relationship("Fingerprint", back_populates="device")

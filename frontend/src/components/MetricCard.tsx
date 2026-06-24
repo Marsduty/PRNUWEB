@@ -4,12 +4,12 @@ type MetricCardProps = {
   title: string;
   value: string;
   unit: string;
-  trend: string;
+  trend: string | null;
   icon: LucideIcon;
 };
 
 export function MetricCard({ title, value, unit, trend, icon: Icon }: MetricCardProps) {
-  const trendClassName = trend.includes("-") ? "text-warningGold" : "text-signalGreen";
+  const trendClassName = trend && trend.includes("-") ? "text-warningGold" : "text-signalGreen";
 
   return (
     <section className="tech-panel flex min-h-[118px] items-center gap-4 p-4">
@@ -22,7 +22,7 @@ export function MetricCard({ title, value, unit, trend, icon: Icon }: MetricCard
           <strong className="text-2xl leading-none text-white">{value}</strong>
           <span className="text-sm text-sky-200">{unit}</span>
         </div>
-        <p className={`mt-2 text-xs ${trendClassName}`}>{trend}</p>
+        {trend && <p className={`mt-2 text-xs ${trendClassName ?? "text-signalGreen"}`}>{trend}</p>}
       </div>
     </section>
   );

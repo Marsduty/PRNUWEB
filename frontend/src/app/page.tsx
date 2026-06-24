@@ -71,28 +71,28 @@ export default function Home() {
           title="当前数据库录入设备指纹数量"
           value={getMetricValue("image_count", "0")}
           unit="枚"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.image_count.percent_change)}
+          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.image_count.percent_change, metrics?.metric_trends?.image_count.previous)}
           icon={Database}
         />
         <MetricCard
           title="今日录入设备指纹数量"
           value={getMetricValue("today_uploads", "0")}
           unit="枚"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_uploads.percent_change)}
+          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_uploads.percent_change, metrics?.metric_trends?.today_uploads.previous)}
           icon={FileImage}
         />
         <MetricCard
           title="今日比对任务数量"
           value={getMetricValue("today_comparisons", "0")}
           unit="次"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_comparisons.percent_change)}
+          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_comparisons.percent_change, metrics?.metric_trends?.today_comparisons.previous)}
           icon={Activity}
         />
         <MetricCard
           title="今日比对命中数量"
           value={getMetricValue("today_hits", "0")}
           unit="次"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_hits.percent_change)}
+          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_hits.percent_change, metrics?.metric_trends?.today_hits.previous)}
           icon={ShieldCheck}
         />
       </section>

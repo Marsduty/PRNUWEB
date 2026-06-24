@@ -1,7 +1,10 @@
-from datetime import UTC, datetime
+from datetime import datetime
 from io import BytesIO
+from zoneinfo import ZoneInfo
 
 import numpy as np
+
+TZ = ZoneInfo("Asia/Shanghai")
 
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -25,9 +28,9 @@ def _mark_job(job_id: int, status: str, progress: str | None = None, error: str 
         if error is not None:
             job.error = error
         if status == "running":
-            job.started_at = datetime.now(UTC)
+            job.started_at = datetime.now(TZ)
         if status in {"succeeded", "failed"}:
-            job.finished_at = datetime.now(UTC)
+            job.finished_at = datetime.now(TZ)
         db.commit()
 
 
@@ -75,7 +78,7 @@ def build_fingerprint_job(job_id: int) -> int:
             is_rebuild = job.type == "rebuild_fingerprint"
             job.status = "running"
             job.progress = "正在重构设备指纹" if is_rebuild else "正在构建设备指纹"
-            job.started_at = datetime.now(UTC)
+            job.started_at = datetime.now(TZ)
             db.commit()
             device_id = int(job.payload.get("device_id"))
             image_ids = [int(image_id) for image_id in job.payload.get("image_ids", [])]
@@ -127,7 +130,7 @@ def build_fingerprint_job(job_id: int) -> int:
                 db.add(fingerprint)
             job.status = "succeeded"
             job.progress = "设备指纹重构已完成" if is_rebuild else "设备指纹任务已完成"
-            job.finished_at = datetime.now(UTC)
+            job.finished_at = datetime.now(TZ)
             db.commit()
         return job_id
     except Exception as exc:
@@ -204,7 +207,7 @@ def database_comparison_job(job_id: int) -> int:
             job.status = "succeeded"
             hit_count = sum(1 for candidate in candidates if candidate.get("is_hit"))
             job.progress = f"PCE 命中 {hit_count} 个候选" if hit_count > 0 else "库中未检索到匹配设备"
-            job.finished_at = datetime.now(UTC)
+            job.finished_at = datetime.now(TZ)
             db.commit()
         return job_id
     except Exception as exc:
@@ -253,7 +256,7 @@ def external_comparison_job(job_id: int) -> int:
             )
             job.status = "succeeded"
             job.progress = "外来图像比对已完成"
-            job.finished_at = datetime.now(UTC)
+            job.finished_at = datetime.now(TZ)
             db.commit()
         return job_id
     except Exception as exc:
