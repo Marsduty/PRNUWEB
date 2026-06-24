@@ -384,16 +384,21 @@ docker-compose up --build
 
 ### 环境变量
 
-通过 `.env` 文件配置（参考 `.env.example`）：
+通过 `.env` 文件配置，支持环境解耦：
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `DATABASE_URL` | `postgresql+psycopg://prnu:prnu@localhost:5432/prnu` | 数据库连接 |
-| `REDIS_URL` | `redis://localhost:6379/0` | Redis 连接 |
-| `MINIO_ENDPOINT` | `localhost:9000` | MinIO 地址 |
-| `MINIO_ACCESS_KEY` | `prnuadmin` | MinIO 访问密钥 |
-| `MINIO_SECRET_KEY` | `prnupassword` | MinIO 秘密密钥 |
-| `LAN_HOST` | `192.168.1.10` | 局域网主机 IP（用于跨设备访问） |
+| 文件 | 用途 |
+|------|------|
+| `.env.example` | 通用模板 |
+| `.env.local.example` | 本地开发模板 |
+| `.env.prod.example` | 生产部署模板 |
+
+| 变量 | 说明 |
+|------|------|
+| `POSTGRES_PASSWORD` | 数据库密码 |
+| `MINIO_ROOT_PASSWORD` | MinIO 密码 |
+| `NEXT_PUBLIC_API_BASE_URL` | 前端 API 地址（本地 `http://localhost:8000`，生产 `/api`） |
+| `CORS_ALLOW_ORIGINS` | CORS 跨域来源 |
+| `MINIO_SECURE` | MinIO HTTPS 开关 |
 
 ---
 

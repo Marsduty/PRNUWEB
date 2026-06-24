@@ -73,39 +73,43 @@ brew install docker docker-compose
 
 ## 部署步骤
 
-### 1️⃣ 准备项目目录
+### 1️⃣ 准备环境变量
 
 ```bash
-cd g:/PRNUweb
-# 验证必要文件存在
-ls -la docker-compose.yml backend/Dockerfile frontend/Dockerfile
+cd /opt/prnu
+
+# 本地开发
+cp .env.local.example .env.local
+
+# 生产部署
+cp .env.prod.example .env.prod   # 编辑改强密码
+cp nginx.conf.example nginx.conf # 编辑改域名
 ```
 
 ### 2️⃣ 构建并启动容器
 
-#### 方案 A：一键启动（推荐）
+**本地开发**：
+
 ```bash
-docker-compose up --build
+docker compose up -d --build
 ```
 
-这会：
-- 构建后端镜像
-- 构建前端镜像
-- 启动 PostgreSQL、Redis、MinIO
-- 启动 Backend API 服务
-- 启动 Celery Worker
-- 启动前端服务
+**生产部署**（含 Nginx + SSL）：
 
-#### 方案 B：后台运行
 ```bash
-docker-compose up -d --build
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-查看日志：
+### 3️⃣ 申请 SSL 证书（生产环境）
+
 ```bash
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f worker
+mkdir -p ssl
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml run --rm certbot \
+  certonly --webroot -w /var/www/certbot \
+  -d your-domain.com --email you@example.com --agree-tos --non-interactive
+ln -sf /etc/letsencrypt/live/your-domain.com/fullchain.pem ssl/fullchain.pem
+ln -sf /etc/letsencrypt/live/your-domain.com/privkey.pem ssl/privkey.pem
+docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.prod.yml restart nginx
 ```
 
 ---
