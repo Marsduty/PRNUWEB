@@ -21,8 +21,9 @@ async function importMetricsHelpers() {
 test("今日指标趋势文案显示为较昨日百分比", async () => {
   const { formatYesterdayTrend } = await importMetricsHelpers();
 
-  assert.equal(formatYesterdayTrend(8), "较昨日 +8%");
-  assert.equal(formatYesterdayTrend(-1), "较昨日 -1%");
-  assert.equal(formatYesterdayTrend(2.35), "较昨日 +2.35%");
-  assert.equal(formatYesterdayTrend(0), "较昨日 0%");
+  assert.equal(formatYesterdayTrend(8, 10, 12), "较昨日 +8%");
+  assert.equal(formatYesterdayTrend(-1, 10, 9), "较昨日 -1%");
+  assert.equal(formatYesterdayTrend(2.35, 10, 11), "较昨日 +2.35%");
+  assert.equal(formatYesterdayTrend(0, 10, 10), null);
+  assert.equal(formatYesterdayTrend(-100, 5, 0), null);
 });

@@ -71,28 +71,52 @@ export default function Home() {
           title="当前数据库录入设备指纹数量"
           value={getMetricValue("image_count", "0")}
           unit="枚"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.image_count.percent_change, metrics?.metric_trends?.image_count.previous)}
+          trend={
+            loading
+              ? "加载中..."
+              : formatYesterdayTrend(metrics?.metric_trends?.image_count.percent_change, metrics?.metric_trends?.image_count.previous, metrics?.image_count)
+          }
           icon={Database}
         />
         <MetricCard
           title="今日录入设备指纹数量"
           value={getMetricValue("today_uploads", "0")}
           unit="枚"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_uploads.percent_change, metrics?.metric_trends?.today_uploads.previous)}
+          trend={
+            loading
+              ? "加载中..."
+              : formatYesterdayTrend(
+                  metrics?.metric_trends?.today_uploads.percent_change,
+                  metrics?.metric_trends?.today_uploads.previous,
+                  metrics?.today_uploads
+                )
+          }
           icon={FileImage}
         />
         <MetricCard
           title="今日比对任务数量"
           value={getMetricValue("today_comparisons", "0")}
           unit="次"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_comparisons.percent_change, metrics?.metric_trends?.today_comparisons.previous)}
+          trend={
+            loading
+              ? "加载中..."
+              : formatYesterdayTrend(
+                  metrics?.metric_trends?.today_comparisons.percent_change,
+                  metrics?.metric_trends?.today_comparisons.previous,
+                  metrics?.today_comparisons
+                )
+          }
           icon={Activity}
         />
         <MetricCard
           title="今日比对命中数量"
           value={getMetricValue("today_hits", "0")}
           unit="次"
-          trend={loading ? "加载中..." : formatYesterdayTrend(metrics?.metric_trends?.today_hits.percent_change, metrics?.metric_trends?.today_hits.previous)}
+          trend={
+            loading
+              ? "加载中..."
+              : formatYesterdayTrend(metrics?.metric_trends?.today_hits.percent_change, metrics?.metric_trends?.today_hits.previous, metrics?.today_hits)
+          }
           icon={ShieldCheck}
         />
       </section>
