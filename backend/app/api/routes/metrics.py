@@ -12,6 +12,8 @@ from app.models.job import Job
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 
+COMPARISON_TYPES = ("database_comparison", "external_comparison")
+
 
 def _percent_change(current: int, previous: int) -> float:
     if previous == 0:
@@ -25,9 +27,15 @@ def summary(db: Session = Depends(get_db)):
     yesterday_start = today_start - timedelta(days=1)
     image_count = db.query(Fingerprint).count()
     today_uploads = db.query(Fingerprint).filter(Fingerprint.created_at >= today_start).count()
-    today_jobs = db.query(Job).filter(Job.created_at >= today_start).count()
+    today_jobs = (
+        db.query(Job)
+        .filter(Job.type.in_(COMPARISON_TYPES))
+        .filter(Job.created_at >= today_start)
+        .count()
+    )
     today_hits = (
         db.query(ComparisonResult)
+        .filter(ComparisonResult.comparison_type.in_(COMPARISON_TYPES))
         .filter(ComparisonResult.created_at >= today_start)
         .filter(ComparisonResult.is_hit.is_(True))
         .count()
@@ -41,12 +49,14 @@ def summary(db: Session = Depends(get_db)):
     )
     yesterday_jobs = (
         db.query(Job)
+        .filter(Job.type.in_(COMPARISON_TYPES))
         .filter(Job.created_at >= yesterday_start)
         .filter(Job.created_at < today_start)
         .count()
     )
     yesterday_hits = (
         db.query(ComparisonResult)
+        .filter(ComparisonResult.comparison_type.in_(COMPARISON_TYPES))
         .filter(ComparisonResult.created_at >= yesterday_start)
         .filter(ComparisonResult.created_at < today_start)
         .filter(ComparisonResult.is_hit.is_(True))
@@ -60,7 +70,7 @@ def summary(db: Session = Depends(get_db)):
 
     recent_comparison_jobs = (
         db.query(Job)
-        .filter(Job.type.in_(["database_comparison", "external_comparison"]))
+        .filter(Job.type.in_(COMPARISON_TYPES))
         .order_by(Job.created_at.desc(), Job.id.desc())
         .limit(20)
         .all()

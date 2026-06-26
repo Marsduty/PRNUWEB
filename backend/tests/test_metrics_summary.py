@@ -267,7 +267,10 @@ def test_metrics_summary_includes_yesterday_percent_changes():
         )
         yesterday_job_a = Job(type="database_comparison", status="succeeded", created_at=yesterday_start + timedelta(hours=1))
         yesterday_job_b = Job(type="external_comparison", status="succeeded", created_at=yesterday_start + timedelta(hours=2))
+        yesterday_build_job = Job(type="build_fingerprint", status="succeeded", created_at=yesterday_start + timedelta(hours=3))
+        yesterday_rebuild_job = Job(type="rebuild_fingerprint", status="succeeded", created_at=yesterday_start + timedelta(hours=4))
         today_job = Job(type="database_comparison", status="succeeded", created_at=today_start + timedelta(hours=1))
+        today_build_job = Job(type="build_fingerprint", status="succeeded", created_at=today_start + timedelta(hours=2))
         db.add_all(
             [
                 yesterday_fingerprint,
@@ -275,7 +278,10 @@ def test_metrics_summary_includes_yesterday_percent_changes():
                 today_fingerprint_b,
                 yesterday_job_a,
                 yesterday_job_b,
+                yesterday_build_job,
+                yesterday_rebuild_job,
                 today_job,
+                today_build_job,
             ]
         )
         db.flush()
@@ -314,7 +320,9 @@ def test_metrics_summary_includes_yesterday_percent_changes():
         response = client.get("/metrics/summary")
 
     assert response.status_code == 200
-    trends = response.json()["metric_trends"]
+    payload = response.json()
+    assert payload["today_comparisons"] == 1
+    trends = payload["metric_trends"]
     assert trends["image_count"] == {"previous": 1, "percent_change": 200.0}
     assert trends["today_uploads"] == {"previous": 1, "percent_change": 100.0}
     assert trends["today_comparisons"] == {"previous": 2, "percent_change": -50.0}
