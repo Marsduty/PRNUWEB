@@ -147,6 +147,21 @@ test("主看板指标下方显示较昨日百分比", () => {
   assert.match(api, /metric_trends/);
 });
 
+test("主界面标题使用新版名称并移除标题下方标签", () => {
+  const page = read("src/app/page.tsx");
+  const globals = read("src/app/globals.css");
+
+  assert.match(page, /成像设备指纹智能取证与比对分析平台/);
+  assert.doesNotMatch(page, /基于成像设备指纹的智能取证与比对分析平台/);
+  assert.doesNotMatch(page, /hero-tags/);
+  assert.doesNotMatch(page, /hero-icon-badge/);
+  assert.doesNotMatch(globals, /\.hero-icon-badge/);
+  assert.doesNotMatch(page, /<span>精准取证<\/span>/);
+  assert.doesNotMatch(page, /<span>智能比对<\/span>/);
+  assert.doesNotMatch(page, /<span>高效可信<\/span>/);
+  assert.doesNotMatch(page, /<span>安全可靠<\/span>/);
+});
+
 test("页面底部左侧显示工信部备案链接", () => {
   const layout = read("src/app/layout.tsx");
   const globals = read("src/app/globals.css");

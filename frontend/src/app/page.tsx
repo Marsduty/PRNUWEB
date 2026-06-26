@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, BarChart3, Database, FileImage, Fingerprint as FingerprintIcon, Lock, ShieldCheck, Target, Zap } from "lucide-react";
+import { Activity, BarChart3, Camera, Database, FileImage, Lock, ScanSearch, ShieldCheck, Target, Zap } from "lucide-react";
 
 import { DistributionChart } from "@/components/DistributionChart";
 import { MetricCard } from "@/components/MetricCard";
@@ -48,21 +48,13 @@ export default function Home() {
     <main className="dashboard-shell">
       <header className="dashboard-hero">
         <div className="hero-emblem" aria-hidden="true">
-          <ShieldCheck className="h-14 w-14 text-cyan-100" />
-          <FingerprintIcon className="h-8 w-8 text-white" />
+          <Camera className="hero-icon-primary" />
         </div>
         <div className="hero-title">
-          <h1>基于成像设备指纹的智能取证与比对分析平台</h1>
-          <div className="hero-tags">
-            <span>精准取证</span>
-            <span>智能比对</span>
-            <span>高效可信</span>
-            <span>安全可靠</span>
-          </div>
+          <h1>成像设备指纹智能取证与比对分析平台</h1>
         </div>
         <div className="hero-secure" aria-hidden="true">
-          <Lock className="h-8 w-8 text-cyan-100" />
-          <span>SECURE</span>
+          <ScanSearch className="hero-icon-primary" />
         </div>
       </header>
 
