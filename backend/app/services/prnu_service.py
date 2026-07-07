@@ -37,10 +37,9 @@ def compare_with_database(query_fingerprint: np.ndarray, database_fingerprints: 
 
 
 def compare_external_images(fingerprint_a: np.ndarray, fingerprint_b: np.ndarray, threshold: float = 60):
-    ncc = ncc_score(fingerprint_a, fingerprint_b)
     result = pce_score(fingerprint_a, fingerprint_b)
     decision = decide_external_match(result["pce"], threshold=threshold)
-    return {**result, "ncc": ncc, **decision}
+    return {**result, **decision}
 
 
 def decide_database_matches(candidates: list[dict], threshold: float = 60):

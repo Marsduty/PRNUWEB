@@ -3,6 +3,23 @@ import math
 import numpy as np
 
 
+def _pad_to_match(a: np.ndarray, b: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """将两个 2D 数组 padding 到二者尺寸的最大值，右侧和下方补零。"""
+    if a.shape == b.shape:
+        return a, b
+    h = max(a.shape[0], b.shape[0])
+    w = max(a.shape[1], b.shape[1])
+    result = []
+    for arr in (a, b):
+        if arr.shape == (h, w):
+            result.append(arr)
+            continue
+        padded = np.zeros((h, w), dtype=arr.dtype)
+        padded[: arr.shape[0], : arr.shape[1]] = arr
+        result.append(padded)
+    return result[0], result[1]
+
+
 def normalize_fingerprint(fingerprint):
     """Return a zero-mean, unit-norm vector for a 2D PRNU fingerprint."""
     arr = np.asarray(fingerprint, dtype=np.float32)
@@ -20,10 +37,12 @@ def normalize_fingerprint(fingerprint):
 
 def ncc_score(query_fingerprint, reference_fingerprint):
     """Compute normalized cross-correlation between two PRNU fingerprints."""
-    query_vec, query_shape = normalize_fingerprint(query_fingerprint)
-    reference_vec, reference_shape = normalize_fingerprint(reference_fingerprint)
-    if query_shape != reference_shape:
-        raise ValueError(f"PRNU shapes must match; query={query_shape}, reference={reference_shape}")
+    query_fingerprint, reference_fingerprint = _pad_to_match(
+        np.asarray(query_fingerprint, dtype=np.float32),
+        np.asarray(reference_fingerprint, dtype=np.float32),
+    )
+    query_vec, _ = normalize_fingerprint(query_fingerprint)
+    reference_vec, _ = normalize_fingerprint(reference_fingerprint)
     return float(reference_vec @ query_vec)
 
 
@@ -56,11 +75,13 @@ def pce_from_corr(corr, exclusion_radius=5):
 
 
 def pce_score(query_fingerprint, reference_fingerprint, exclusion_radius=5):
-    """Compute PCE between two PRNU fingerprints."""
+    """Compute PCE between two PRNU fingerprints. 自动补零对齐尺寸。"""
+    query_fingerprint, reference_fingerprint = _pad_to_match(
+        np.asarray(query_fingerprint, dtype=np.float32),
+        np.asarray(reference_fingerprint, dtype=np.float32),
+    )
     query_vec, query_shape = normalize_fingerprint(query_fingerprint)
     reference_vec, reference_shape = normalize_fingerprint(reference_fingerprint)
-    if query_shape != reference_shape:
-        raise ValueError(f"PRNU shapes must match; query={query_shape}, reference={reference_shape}")
 
     query_fft = np.fft.fft2(query_vec.reshape(query_shape))
     reference_fft = np.fft.fft2(reference_vec.reshape(reference_shape))
@@ -70,16 +91,12 @@ def pce_score(query_fingerprint, reference_fingerprint, exclusion_radius=5):
 
 
 def rank_references(query_fingerprint, references, top_k=5, include_pce=False):
-    """Rank reference PRNU fingerprints by NCC, optionally adding PCE for returned candidates."""
+    """Rank reference PRNU fingerprints by PCE (deprecated: always computes PCE directly)."""
     top_k = max(int(top_k), 1)
     rows = []
     for name, reference in references.items():
-        row = {"name": name, "ncc": ncc_score(query_fingerprint, reference)}
-        rows.append(row)
-
-    rows.sort(key=lambda item: item["ncc"], reverse=True)
-    rows = rows[:top_k]
-    if include_pce:
-        for row in rows:
-            row.update(pce_score(query_fingerprint, references[row["name"]]))
-    return rows
+        result = pce_score(query_fingerprint, reference)
+        result["name"] = name
+        rows.append(result)
+    rows.sort(key=lambda item: item["pce"], reverse=True)
+    return rows[:top_k]
