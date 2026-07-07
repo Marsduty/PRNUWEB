@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
-from app.services.image_preprocess import load_rgb_square
+from app.services.image_preprocess import load_rgb_full_square, load_rgb_square
 from prnu_core import get_fingerprint, ncc_score, pce_score, rank_references
 
 
@@ -23,7 +23,8 @@ def build_single_image_fingerprint(
     output_size: int = 1024,
     enhancement_config=DEFAULT_ENHANCEMENT_CONFIG,
 ) -> np.ndarray:
-    image = load_rgb_square(image_bytes, output_size=output_size)
+    """单图指纹：使用全尺寸最大内接正方形，保留完整图像信息。"""
+    image = load_rgb_full_square(image_bytes)
     return get_fingerprint([image], enh_list=enhancement_config)
 
 

@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     minio_secure: bool = False
     prnu_image_bucket: str = "prnu-images"
     prnu_artifact_bucket: str = "prnu-artifacts"
-    pce_threshold: float = 60.0
+    pce_threshold: float = 30.0  # 单图指纹信噪比低，降低比对门限
     prnu_image_size: int = 1024
     cors_allow_origins: str = "http://localhost:3000"
 
